@@ -1,18 +1,14 @@
 import React from 'react'
 
-type ButtonProps = {
-    children: React.ReactNode
-}
+import 'styles/button.scss'
 
-export const Button = ({ children }: ButtonProps ) => {
-    const [counter, setCounter] = React.useState(0)
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>
 
-    const increment = React.useCallback(() => {
-        setCounter(state => state + 1)
-    }, [])
+export const Button = (props: ButtonProps ) => {
 
     return (
-        <button onClick={increment}>{`${children} ${counter}`}</button>
+        <button className="button" {...props} >
+            {props.children}
+        </button>
     )
 }
-
