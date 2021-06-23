@@ -61,7 +61,27 @@
                 align-items: center;
                 margin-top: 16px;
 
-                span {
+                .user-info {
+                    display: flex;
+                    align-items: center;
+                    margin-top: 24px;
+
+                    img {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                    }
+
+                    span {
+                        margin-left: 8px;
+                        color: #29292E;
+                        font-weight: 500;
+                        font-size: 14px;
+                        font-family: 'Roboto', sans-serif;
+                    }
+                }
+
+                > span {
                     font-size: 14px;
                     color: #737380;
                     font-weight: 500;
@@ -76,9 +96,8 @@
                         cursor: pointer;
                     }
                 }
+
             }
         }
     }
-
-
 }
