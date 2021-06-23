@@ -14,7 +14,7 @@ export const NewRoom = () => {
     const history = useHistory()
     const [newRoom, setNewRoom] = React.useState('')
 
-    const handleCreateRoom = React.useCallback( async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleCreateRoom = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         if (newRoom.trim() === '') {
@@ -22,12 +22,20 @@ export const NewRoom = () => {
         }
 
         const roomRef = database.ref('rooms')
-        const firebaseRoom = await roomRef.push({
-            title: newRoom,
-            authorId: user?.id
-        })
+        const firebaseRoom = roomRef
+            .push({
+                title: newRoom,
+                authorId: user?.id
+            }, 
+            (error) => {
+                if (error) {
+                    // TODO: Tratar o erro
+                    console.error('Erro ao inserir uma nova sala: ', error)
+                    return
+                }
 
-        history.push(`/rooms/${firebaseRoom.key}`)
+                history.push(`/rooms/${firebaseRoom.key}`)
+            })
 
     }, [history, newRoom, user?.id])
 

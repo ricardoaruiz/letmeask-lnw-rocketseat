@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
 
 import logoImg from 'assets/images/logo.svg'
 import { Button } from 'components/Button'
@@ -33,19 +33,21 @@ type RoomParams = {
 }
 
 export const Room = () => {
+    const history = useHistory()
     const { id } = useParams<RoomParams>()
     const { user } = useAuth()
     const [newQuestion, setNewQuestion] = React.useState('')
     const [questions, setQuestions] = React.useState<Question[]>([])
     const [title, setTitle] = React.useState('')
 
-    const handleSendQuestion = React.useCallback( async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSendQuestion = React.useCallback( (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         if(newQuestion.trim() === '') {
             return
         }
         if(!user) {
+            // TODO: Tratar o erro
             throw new Error('You must be logged in')
         }
 
@@ -59,46 +61,65 @@ export const Room = () => {
             isAnswered: false
         }
 
-        try {
-            await database.ref(`rooms/${id}/questions`).push(question)
-            setNewQuestion('')
-        } catch(error) {
-            // TODO: tratar o erro
-            console.error(error)
-        }
+        const questionsRef = database.ref(`rooms/${id}/questions`)
+
+        questionsRef
+            .push(question, (error) => {
+                if (error) {
+                    // TODO: Tratar o erro
+                    console.error('Erro ao inserir uma nova pergunta: ', error)
+                    return
+                }
+                setNewQuestion('')
+            })
+    
          
     }, [id, newQuestion, user])
 
-    React.useEffect(() => {
-        const loadQuestions = async () => {
-            await database.ref(`rooms/${id}`).on('value', room => {
-                
-                const databaseRoom: FirebaseRoom = room.val()
-                const questions: FirebaseQuestions = databaseRoom.questions ?? {}
+    /**
+     * Update view with new questions from firebase
+     */
+    const refreshQuestions = React.useCallback(() => {
+        //https://firebase.google.com/docs/database/admin/retrieve-data#node.js_2
+        const roomRef = database.ref(`rooms/${id}`)
+        
+        roomRef.on('value', room => {
+            
+            const databaseRoom: FirebaseRoom = room.val()
+            const questions: FirebaseQuestions = databaseRoom.questions ?? {}
 
-                const parseQuestions = Object.entries(questions).map(([key, value]) => {
-                    return {
-                        id: key,
-                        content: value.content,
-                        author: value.author,
-                        isHighlighted: value.isHighlighted,
-                        isAnswered: value.isAnswered
-                    } as Question
-                })
-
-                setTitle(databaseRoom.title)
-                setQuestions(parseQuestions)
+            const parseQuestions = Object.entries(questions).map(([key, value]) => {
+                return {
+                    id: key,
+                    content: value.content,
+                    author: value.author,
+                    isHighlighted: value.isHighlighted,
+                    isAnswered: value.isAnswered
+                } as Question
             })
-        }
-        loadQuestions()
 
+            setTitle(databaseRoom.title)
+            setQuestions(parseQuestions)
+        })
+
+        return roomRef
+        
     }, [id])
+
+    // Subscribe on firebase value event to get new registers (questions)
+    React.useEffect(() => {        
+        const roomRef = refreshQuestions()
+
+        return () => {
+            roomRef.off('value', refreshQuestions)
+        }
+    }, [refreshQuestions])
 
     return (
         <div id="page-room">
             <header>
                 <div className="content">
-                    <img src={logoImg} alt="Letmeask" />
+                    <img src={logoImg} alt="Letmeask" onClick={() => history.push('/')} />
                     <RoomCode roomCode={id} />
                 </div>
             </header>
@@ -133,7 +154,7 @@ export const Room = () => {
 
                 <ul>
                     {questions.map(question => (
-                        <li>{question.content}</li>
+                        <li key={question.id}>{question.content}</li>
                     ))}
                 </ul>
             </main>
