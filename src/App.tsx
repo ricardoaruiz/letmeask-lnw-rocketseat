@@ -1,8 +1,7 @@
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 import { AuthContextProvider } from 'context/AuthContext';
-import {Home} from 'pages/home/Home';
-import { NewRoom } from 'pages/NewRoom/NewRoom';
+import { Home, NewRoom, Room } from 'pages';
 
 import 'styles/global.scss';
 
@@ -10,8 +9,11 @@ export const App = () => {
   return (
     <BrowserRouter>
       <AuthContextProvider>
-        <Route path="/" exact component={Home} />
-        <Route path="/rooms/new" exact component={NewRoom} />
+        <Switch>
+          <Route path="/" exact component={Home} />
+          <Route path="/rooms/new" exact component={NewRoom} />
+          <Route path="/rooms/:id" component={Room} />
+        </Switch>
       </AuthContextProvider>
     </BrowserRouter>
   );
