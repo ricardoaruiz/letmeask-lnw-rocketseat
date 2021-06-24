@@ -16,6 +16,16 @@
             max-height: 45px;
             cursor: pointer;
         }
+
+        .header-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+
+            & button:last-of-type {
+                height: 40px;
+            }
+        }
     }
 
     main {
@@ -99,6 +109,10 @@
                 }
 
             }
+        }
+
+        .question-list {
+            margin: 32px 0;
         }
     }
 }

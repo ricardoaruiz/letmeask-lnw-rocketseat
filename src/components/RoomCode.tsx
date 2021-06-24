@@ -21,4 +21,3 @@ export const RoomCode = ({ roomCode }: RoomCodeProps) => {
     )
 }
 
-export default RoomCode

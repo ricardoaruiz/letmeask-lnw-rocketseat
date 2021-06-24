@@ -1,43 +1,42 @@
 import React from 'react'
 import { Link, useHistory } from 'react-router-dom'
 
-import { Button } from 'components/Button'
 import ilustrationImg from 'assets/images/illustration.svg'
 import logoImg from 'assets/images/logo.svg'
 
-import 'styles/auth.scss'
-import { database } from 'services/firebase'
+import { Button } from 'components/Button'
+
 import { useAuth } from 'hooks/useAuth'
+import { useRoom } from 'hooks/useRoom'
+
+import 'styles/auth.scss'
 
 export const NewRoom = () => {
     const { user } = useAuth()
     const history = useHistory()
     const [newRoom, setNewRoom] = React.useState('')
+    const { createRoom } = useRoom()
 
-    const handleCreateRoom = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
+    const handleCreateRoom = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+        try {
+            event.preventDefault()
 
-        if (newRoom.trim() === '') {
-            return
+            if (newRoom.trim() === '') {
+                return
+            }
+
+            const roomId = await createRoom({
+                title: newRoom,
+                authorId: user!.id
+            })
+            history.push(`/rooms/${roomId}`)
+            
+        } catch(error) {
+            // TODO: Tratar o erro
+            console.error(error)
         }
 
-        const roomRef = database.ref('rooms')
-        const firebaseRoom = roomRef
-            .push({
-                title: newRoom,
-                authorId: user?.id
-            }, 
-            (error) => {
-                if (error) {
-                    // TODO: Tratar o erro
-                    console.error('Erro ao inserir uma nova sala: ', error)
-                    return
-                }
-
-                history.push(`/rooms/${firebaseRoom.key}`)
-            })
-
-    }, [history, newRoom, user?.id])
+    }, [createRoom, history, newRoom, user])
 
     return (
         <div id="page-auth">

@@ -2,31 +2,16 @@ import React from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 
 import logoImg from 'assets/images/logo.svg'
+import { ReactComponent as LikeImg } from 'assets/images/like.svg'
+
 import { Button } from 'components/Button'
-import RoomCode from 'components/RoomCode'
+import { RoomCode } from 'components/RoomCode'
+import {Question as QuestionItem } from 'components/Question'
+
+import { useAuth } from 'hooks/useAuth'
+import { useRoom } from 'hooks/useRoom'
 
 import 'styles/room.scss'
-import { useAuth } from 'hooks/useAuth'
-import { database } from 'services/firebase'
-
-type Question = {
-    id: string,
-    author: {
-        name: string,
-        avatar: string,
-    },
-    content: string,
-    isAnswered: boolean,
-    isHighlighted: boolean
-}
-
-type FirebaseQuestions = Record<string, Omit<Question, 'id'>>
-
-type FirebaseRoom = {
-    authorId: string,
-    questions: FirebaseQuestions,
-    title: string
-}
 
 type RoomParams = {
     id: string
@@ -37,83 +22,51 @@ export const Room = () => {
     const { id } = useParams<RoomParams>()
     const { user } = useAuth()
     const [newQuestion, setNewQuestion] = React.useState('')
-    const [questions, setQuestions] = React.useState<Question[]>([])
-    const [title, setTitle] = React.useState('')
+    const { title, questions, createNewQuestion, likeAQuestion, unlikeAQuestion  } = useRoom(id)
 
-    const handleSendQuestion = React.useCallback( (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
+    const handleSendQuestion = React.useCallback( async (event: React.FormEvent<HTMLFormElement>) => {
+        try {
+            event.preventDefault()
 
-        if(newQuestion.trim() === '') {
-            return
-        }
-        if(!user) {
+            if(newQuestion.trim() === '') {
+                return
+            }
+            if(!user) {
+                // TODO: Tratar o erro
+                throw new Error('You must be logged in')
+            }
+
+            const question = {
+                content: newQuestion,
+                author: {
+                    name: user.name,
+                    avatar: user.avatar
+                },
+                isHighlighted: false,
+                isAnswered: false
+            }
+
+            await createNewQuestion(question)
+            setNewQuestion('')
+        } catch(error) {
             // TODO: Tratar o erro
-            throw new Error('You must be logged in')
+            console.error(error)
         }
-
-        const question = {
-            content: newQuestion,
-            author: {
-                name: user.name,
-                avatar: user.avatar
-            },
-            isHighlighted: false,
-            isAnswered: false
-        }
-
-        const questionsRef = database.ref(`rooms/${id}/questions`)
-
-        questionsRef
-            .push(question, (error) => {
-                if (error) {
-                    // TODO: Tratar o erro
-                    console.error('Erro ao inserir uma nova pergunta: ', error)
-                    return
-                }
-                setNewQuestion('')
-            })
-    
-         
-    }, [id, newQuestion, user])
+    }, [createNewQuestion, newQuestion, user])
 
     /**
-     * Update view with new questions from firebase
+     * Like a questions
      */
-    const refreshQuestions = React.useCallback(() => {
-        //https://firebase.google.com/docs/database/admin/retrieve-data#node.js_2
-        const roomRef = database.ref(`rooms/${id}`)
-        
-        roomRef.on('value', room => {
-            
-            const databaseRoom: FirebaseRoom = room.val()
-            const questions: FirebaseQuestions = databaseRoom.questions ?? {}
-
-            const parseQuestions = Object.entries(questions).map(([key, value]) => {
-                return {
-                    id: key,
-                    content: value.content,
-                    author: value.author,
-                    isHighlighted: value.isHighlighted,
-                    isAnswered: value.isAnswered
-                } as Question
-            })
-
-            setTitle(databaseRoom.title)
-            setQuestions(parseQuestions)
-        })
-
-        return roomRef
-        
-    }, [id])
-
-    // Subscribe on firebase value event to get new registers (questions)
-    React.useEffect(() => {        
-        const roomRef = refreshQuestions()
-
-        return () => {
-            roomRef.off('value', refreshQuestions)
+    const handleLikeQuestion = React.useCallback(async (questionId: string, likeId: string | undefined) => {
+        try {
+            likeId 
+                ? await unlikeAQuestion(questionId, likeId) 
+                : await likeAQuestion(questionId, user!.id)
+        } catch(error) {
+            // TODO: Tratar o erro
+            console.error(error)
         }
-    }, [refreshQuestions])
+    }, [likeAQuestion, unlikeAQuestion, user])
 
     return (
         <div id="page-room">
@@ -152,11 +105,25 @@ export const Room = () => {
                     </div>
                 </form>
 
-                <ul>
-                    {questions.map(question => (
-                        <li key={question.id}>{question.content}</li>
+                <div className="question-list">
+                    {questions.map(({id, content, author, likeId, likeCount}) => (
+                        <QuestionItem 
+                            key={id} 
+                            content={content} 
+                            author={author} 
+                        >
+                            <button 
+                                type="button"
+                                className={`like-button ${!!likeId && 'liked'}`}
+                                aria-label="marcar como gostei"
+                                onClick={() => handleLikeQuestion(id, likeId)}
+                                >
+                                {likeCount && <span>{likeCount}</span>}
+                                <LikeImg />
+                            </button>
+                        </QuestionItem>
                     ))}
-                </ul>
+                </div>
             </main>
         </div>
     )
