@@ -1,15 +1,12 @@
 import React from 'react'
 import { Link, useHistory } from 'react-router-dom'
 
-import ilustrationImg from 'assets/images/illustration.svg'
 import logoImg from 'assets/images/logo.svg'
-
-import { Button } from 'components/Button'
 
 import { useAuth } from 'hooks/useAuth'
 import { useRoom } from 'hooks/useRoom'
 
-import 'styles/auth.scss'
+import { Button, MainContent, MainIlustration, MainLayout } from 'components'
 
 export const NewRoom = () => {
     const { user } = useAuth()
@@ -39,14 +36,13 @@ export const NewRoom = () => {
     }, [createRoom, history, newRoom, user])
 
     return (
-        <div id="page-auth">
+        <MainLayout>
             <aside>
-                <img src={ilustrationImg} alt="Ilustração simbolizando perguntas e respostas" />
-                <strong>Crie salar de Q&amp;A ao-vivo</strong>
-                <p>Tire as dúvidas de sua audiência em tempo real</p>
+                <MainIlustration />
             </aside>
             <main>
-                <div className="main-content">
+                <MainContent>
+
                     <img src={logoImg} alt="" />
                     
                     <h2>Criar uma nova sala</h2>
@@ -59,10 +55,12 @@ export const NewRoom = () => {
                         />
                         <Button type="submit">Criar sala</Button>
                     </form>
+                    
                     <p>Quer entrar em uma sala existente <Link to="/">clique aqui</Link></p>
-                </div>
+
+                </MainContent>
             </main>
-        </div>
+        </MainLayout>
     )
 }
 

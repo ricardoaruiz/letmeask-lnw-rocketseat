@@ -1,16 +1,14 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { useAuth } from 'hooks/useAuth'
-
-import { Button } from 'components/Button'
-import ilustrationImg from 'assets/images/illustration.svg'
 import logoImg from 'assets/images/logo.svg'
 import googleIconImg from 'assets/images/google-icon.svg'
+
 import { database } from 'services/firebase'
+import { useAuth } from 'hooks/useAuth'
+import { Button, MainContent, MainIlustration, MainLayout } from 'components'
 
-import 'styles/auth.scss'
-
+import * as S from './Home.style'
 
 export const Home = () => {
     const history = useHistory();
@@ -62,22 +60,21 @@ export const Home = () => {
     }, [history, roomCode])
 
     return (
-        <div id="page-auth">
+        <MainLayout>
             <aside>
-                <img src={ilustrationImg} alt="Ilustração simbolizando perguntas e respostas" />
-                <strong>Crie salar de Q&amp;A ao-vivo</strong>
-                <p>Tire as dúvidas de sua audiência em tempo real</p>
+                <MainIlustration />
             </aside>
             <main>
-                <div className="main-content">
+                <MainContent>
+                    
                     <img src={logoImg} alt="" />
                     
-                    <button className="create-room" onClick={handleCreateRoom}>
+                    <S.CreateRoom onClick={handleCreateRoom}>
                         <img src={googleIconImg} alt="" />
                         Crie a sua sala com o Google
-                    </button>
+                    </S.CreateRoom>
 
-                    <div className="separator">ou entre em uma sala</div>
+                    <S.Separator>ou entre em uma sala</S.Separator>
 
                     <form onSubmit={handleJoinRoom}>
                         <input 
@@ -88,9 +85,10 @@ export const Home = () => {
                         />
                         <Button type="submit">Entrar na sala</Button>
                     </form>
-                </div>
+
+                </MainContent>
             </main>
-        </div>
+        </MainLayout>
     )
 }
 

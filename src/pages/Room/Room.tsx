@@ -1,25 +1,18 @@
 import React from 'react'
-import { useParams, useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
-import logoImg from 'assets/images/logo.svg'
-import { ReactComponent as LikeImg } from 'assets/images/like.svg'
-
-import { Button } from 'components/Button'
-import { RoomCode } from 'components/RoomCode'
-import {Question as QuestionItem } from 'components/Question'
+import { Button, Content, Header, QuestionList } from 'components'
 
 import { useAuth } from 'hooks/useAuth'
 import { useRoom } from 'hooks/useRoom'
 
-import 'styles/room.scss'
-import classNames from 'classnames'
+import * as S from './Room.style'
 
 type RoomParams = {
     id: string
 }
 
 export const Room = () => {
-    const history = useHistory()
     const { id } = useParams<RoomParams>()
     const { user } = useAuth()
     const [newQuestion, setNewQuestion] = React.useState('')
@@ -68,70 +61,45 @@ export const Room = () => {
     }, [likeAQuestion, user])
 
     return (
-        <div id="page-room">
-            <header>
-                <div className="content">
-                    <img src={logoImg} alt="Letmeask" onClick={() => history.push('/')} />
-                    <RoomCode roomCode={id} />
-                </div>
-            </header>
+        <Content>
+            <Header id={id} />
 
-            <main>
-                <div className="room-title">
+            <S.Main>
+                <S.Title>
                     <h1>Sala: {title}</h1>
                     {!!questions.length && <span>{`${questions.length} perguntas`}</span>}
-                </div>
+                </S.Title>
 
-                <form onSubmit={handleSendQuestion}>
+                <S.Form onSubmit={handleSendQuestion}>
                     <textarea 
                         placeholder="O que você quer perguntar?"
                         value={newQuestion}
                         onChange={event => setNewQuestion(event.target.value)}
                     />
 
-                    <div className="form-footer">
+                    <S.Footer>
                         {user ? (
-                            <div className="user-info">
+                            <S.UserInfo>
                                 <img src={user.avatar} alt={user.name} />
                                 <span>{user.name}</span>
-                            </div>
+                            </S.UserInfo>
                         ) : (
                             <span>
                                 Para enviar uma pergunta, 
                                 <button>faça seu login</button>
                             </span>)}
                         <Button type="submit" disabled={!user}>Enviar pergunta</Button>
-                    </div>
-                </form>
+                    </S.Footer>
+                </S.Form>
 
-                <div className="question-list">
-                    {questions.map(({id, content, author, likeId, likeCount, isAnswered, isHighlighted}) => (
-                        <QuestionItem 
-                            key={id} 
-                            content={content} 
-                            author={author}
-                            isAnswered={isAnswered}
-                            isHighLighted={isHighlighted}
-                        >
-                            {!isAnswered && (
-                                <button 
-                                    type="button"
-                                    className={classNames({
-                                        'like-button': true,
-                                        liked : !!likeId
-                                    })}
-                                    aria-label="marcar como gostei"
-                                    onClick={() => handleLikeQuestion(id, likeId)}
-                                    >
-                                    {likeCount && <span>{likeCount}</span>}
-                                    <LikeImg />
-                                </button>
-                            )}
-                        </QuestionItem>
-                    ))}
+                <div>
+                    <QuestionList 
+                        questions={questions} 
+                        onLikeQuestion={handleLikeQuestion} 
+                    />
                 </div>
-            </main>
-        </div>
+            </S.Main>
+        </Content>
     )
 }
 

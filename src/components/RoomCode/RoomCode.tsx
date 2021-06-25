@@ -1,7 +1,7 @@
 import React from 'react'
 import copyImg from 'assets/images/copy.svg'
 
-import 'styles/room-code.scss'
+import * as S from './RoomCode.style'
 
 type RoomCodeProps = {
     roomCode: string
@@ -14,10 +14,10 @@ export const RoomCode = ({ roomCode }: RoomCodeProps) => {
     }, [roomCode])
 
     return (
-        <button className="room-code" onClick={handleCopyToClipboard}>
+        <S.RoomCode onClick={handleCopyToClipboard}>
             <img src={copyImg} alt="Copy room code" />
             <span>Sala #{roomCode}</span>
-        </button>
+        </S.RoomCode>
     )
 }
 

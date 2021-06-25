@@ -1,19 +1,10 @@
 import React from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 
-import logoImg from 'assets/images/logo.svg'
-
-import { ReactComponent as CheckImg } from 'assets/images/check.svg'
-import { ReactComponent as AnswerImg } from 'assets/images/answer.svg'
-import { ReactComponent as DeleteImg } from 'assets/images/delete.svg'
-
-import { Button } from 'components/Button'
-import { RoomCode } from 'components/RoomCode'
-import {Question as QuestionItem } from 'components/Question'
-
+import { Content, Header, QuestionList } from 'components'
 import { useRoom } from 'hooks/useRoom'
 
-import 'styles/room.scss'
+import * as S from 'pages/Room/Room.style'
 
 type RoomParams = {
     id: string
@@ -76,68 +67,25 @@ export const AdminRoom  = () => {
     }, [finishRoom, history])
 
     return (
-        <div id="page-room">
-            <header>
-                <div className="content">
-                    <img src={logoImg} alt="Letmeask" onClick={() => history.push('/')} />
-                    <div className="header-buttons">
-                        <RoomCode roomCode={id} />
-                        <Button isOutlined onClick={handleFinishRoom}>Encerrar sala</Button>
-                    </div>
-                </div>
-            </header>
+        <Content>
+            <Header id={id} onCloseRoom={handleFinishRoom}/>
 
-            <main>
-                <div className="room-title">
+            <S.Main>
+                <S.Title>
                     <h1>Sala: {title}</h1>
                     {!!questions.length && <span>{`${questions.length} perguntas`}</span>}
-                </div>
+                </S.Title>
 
                 <div className="question-list">
-                    {questions.map(({id, content, author, isAnswered, isHighlighted}) => (
-                        <QuestionItem 
-                            key={id} 
-                            content={content} 
-                            author={author} 
-                            isAnswered={isAnswered}
-                            isHighLighted={isHighlighted}
-                        >
-                            {!isAnswered && (
-                                <>
-                                    <button 
-                                        type="button"
-                                        aria-label="mark questions as answered"
-                                        onClick={() => handleCheckQuestionAsAnswered(id, isAnswered)}
-                                        title="mark questions as answered"
-                                    >
-                                        <CheckImg />
-                                    </button>
-
-                                    <button 
-                                        type="button"
-                                        aria-label="highlight question"
-                                        onClick={() => handleHighlightQuestion(id, isHighlighted)}
-                                        title="highlight question"
-                                    >
-                                        <AnswerImg />
-                                    </button>'
-                                </>
-                            )}
-
-                            <button 
-                                type="button"
-                                aria-label="remove this question"
-                                onClick={() => handleRemoveQuestion(id)}
-                                title="remove this question"
-                            >
-                                <DeleteImg />
-                            </button>
-
-                        </QuestionItem>
-                    ))}
+                    <QuestionList 
+                        questions={questions} 
+                        onCheckQuestionAsAnswered={handleCheckQuestionAsAnswered}
+                        onHighlightQuestion={handleHighlightQuestion}
+                        onRemoveQuestion={handleRemoveQuestion}
+                    />
                 </div>
-            </main>
-        </div>
+            </S.Main>
+        </Content>
     )
 }
 
