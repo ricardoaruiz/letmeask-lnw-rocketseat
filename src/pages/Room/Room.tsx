@@ -12,6 +12,7 @@ import { useAuth } from 'hooks/useAuth'
 import { useRoom } from 'hooks/useRoom'
 
 import 'styles/room.scss'
+import classNames from 'classnames'
 
 type RoomParams = {
     id: string
@@ -22,7 +23,7 @@ export const Room = () => {
     const { id } = useParams<RoomParams>()
     const { user } = useAuth()
     const [newQuestion, setNewQuestion] = React.useState('')
-    const { title, questions, createNewQuestion, likeAQuestion, unlikeAQuestion  } = useRoom(id)
+    const { title, questions, createNewQuestion, likeAQuestion } = useRoom(id)
 
     const handleSendQuestion = React.useCallback( async (event: React.FormEvent<HTMLFormElement>) => {
         try {
@@ -59,14 +60,12 @@ export const Room = () => {
      */
     const handleLikeQuestion = React.useCallback(async (questionId: string, likeId: string | undefined) => {
         try {
-            likeId 
-                ? await unlikeAQuestion(questionId, likeId) 
-                : await likeAQuestion(questionId, user!.id)
+            await likeAQuestion(questionId, user!.id, likeId)
         } catch(error) {
             // TODO: Tratar o erro
             console.error(error)
         }
-    }, [likeAQuestion, unlikeAQuestion, user])
+    }, [likeAQuestion, user])
 
     return (
         <div id="page-room">
@@ -106,21 +105,28 @@ export const Room = () => {
                 </form>
 
                 <div className="question-list">
-                    {questions.map(({id, content, author, likeId, likeCount}) => (
+                    {questions.map(({id, content, author, likeId, likeCount, isAnswered, isHighlighted}) => (
                         <QuestionItem 
                             key={id} 
                             content={content} 
-                            author={author} 
+                            author={author}
+                            isAnswered={isAnswered}
+                            isHighLighted={isHighlighted}
                         >
-                            <button 
-                                type="button"
-                                className={`like-button ${!!likeId && 'liked'}`}
-                                aria-label="marcar como gostei"
-                                onClick={() => handleLikeQuestion(id, likeId)}
-                                >
-                                {likeCount && <span>{likeCount}</span>}
-                                <LikeImg />
-                            </button>
+                            {!isAnswered && (
+                                <button 
+                                    type="button"
+                                    className={classNames({
+                                        'like-button': true,
+                                        liked : !!likeId
+                                    })}
+                                    aria-label="marcar como gostei"
+                                    onClick={() => handleLikeQuestion(id, likeId)}
+                                    >
+                                    {likeCount && <span>{likeCount}</span>}
+                                    <LikeImg />
+                                </button>
+                            )}
                         </QuestionItem>
                     ))}
                 </div>

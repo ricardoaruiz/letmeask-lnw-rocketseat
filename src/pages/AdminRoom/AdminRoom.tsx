@@ -22,7 +22,31 @@ type RoomParams = {
 export const AdminRoom  = () => {
     const history = useHistory()
     const { id } = useParams<RoomParams>()
-    const { title, questions, removeQuestion, finishRoom  } = useRoom(id)
+    const { title, questions, removeQuestion, finishRoom, highlightAQuestion, answerAQuestion  } = useRoom(id)
+
+    /**
+     * Highlight a question
+     */
+     const handleHighlightQuestion = React.useCallback( async (questionId: string, isHighlighted: boolean) => {
+        try {
+            await highlightAQuestion(questionId, !isHighlighted)
+        } catch(error) {
+            // TODO: Tratar o erro
+            console.error(error)
+        }
+    }, [highlightAQuestion])
+
+    /**
+     * Answer a question
+     */
+    const handleCheckQuestionAsAnswered = React.useCallback( async (questionId: string, isAnswered: boolean) => {
+        try {
+            await answerAQuestion(questionId, !isAnswered)
+        } catch(error) {
+            // TODO: Tratar o erro
+            console.error(error)
+        }
+    }, [answerAQuestion])
 
     /**
      * Remove a question
@@ -70,30 +94,41 @@ export const AdminRoom  = () => {
                 </div>
 
                 <div className="question-list">
-                    {questions.map(({id, content, author}) => (
+                    {questions.map(({id, content, author, isAnswered, isHighlighted}) => (
                         <QuestionItem 
                             key={id} 
                             content={content} 
                             author={author} 
+                            isAnswered={isAnswered}
+                            isHighLighted={isHighlighted}
                         >
-                            <button 
-                                type="button"
-                                aria-label="finish this room"
-                            >
-                                <CheckImg />
-                            </button>
+                            {!isAnswered && (
+                                <>
+                                    <button 
+                                        type="button"
+                                        aria-label="mark questions as answered"
+                                        onClick={() => handleCheckQuestionAsAnswered(id, isAnswered)}
+                                        title="mark questions as answered"
+                                    >
+                                        <CheckImg />
+                                    </button>
 
-                            <button 
-                                type="button"
-                                aria-label="answer this question"
-                            >
-                                <AnswerImg />
-                            </button>
+                                    <button 
+                                        type="button"
+                                        aria-label="highlight question"
+                                        onClick={() => handleHighlightQuestion(id, isHighlighted)}
+                                        title="highlight question"
+                                    >
+                                        <AnswerImg />
+                                    </button>'
+                                </>
+                            )}
 
                             <button 
                                 type="button"
                                 aria-label="remove this question"
                                 onClick={() => handleRemoveQuestion(id)}
+                                title="remove this question"
                             >
                                 <DeleteImg />
                             </button>

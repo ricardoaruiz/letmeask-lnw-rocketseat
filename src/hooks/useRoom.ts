@@ -1,7 +1,7 @@
-import React from "react"
+import React from 'react'
 import firebase from 'firebase/app'
-import { database } from "services/firebase"
-import { useAuth } from "./useAuth"
+import { database } from 'services/firebase'
+import { useAuth } from './useAuth'
 
 type UseRommType = {
     title: string
@@ -10,8 +10,9 @@ type UseRommType = {
     finishRoom: () => Promise<void>
     createNewQuestion: (question: Omit<Question, 'id'>) => Promise<void>
     removeQuestion: (questionId: string) => Promise<void>
-    likeAQuestion: (questionId: string, userId: string) => Promise<void>
-    unlikeAQuestion: (questionId: string, likeId: string) => Promise<void>
+    likeAQuestion: (questionId: string, userId: string, likeId: string | undefined) => Promise<void>
+    highlightAQuestion: (questionId: string, isHighlighted: boolean) => Promise<void>
+    answerAQuestion: (questionId: string, isAnswered: boolean) => Promise<void>
 }
 
 type Room = {
@@ -143,7 +144,7 @@ export const useRoom = (roomId?: string): UseRommType => {
     }, [roomId])
 
     /**
-     * Create a new question in a room
+     * Remove a question in a room
      */
     const removeQuestion = React.useCallback((questionId: string): Promise<void> => {
 
@@ -165,15 +166,46 @@ export const useRoom = (roomId?: string): UseRommType => {
     /**
      * Like a question
      */
-    const likeAQuestion = React.useCallback((questionId: string, userId: string): Promise<void> => {
+    const likeAQuestion = React.useCallback((questionId: string, userId: string, likeId: string | undefined): Promise<void> => {
         return new Promise((resolve, reject) => {
-            const likesRef = database.ref(`rooms/${roomId}/questions/${questionId}/likes`)
 
-            likesRef.push({
-                authorId: userId,
+            if (!likeId) {
+                const likesRef = database.ref(`rooms/${roomId}/questions/${questionId}/likes`)    
+                likesRef.push({
+                    authorId: userId,
+                },(error) => {
+                    if (error) {
+                        reject(`Erro ao realizar o like na pergunta: ${error}`)      
+                        return
+                    }
+                    resolve()
+                })
+            } else {
+                const likesRef = database.ref(`rooms/${roomId}/questions/${questionId}/likes/${likeId}`)
+                likesRef.remove((error) => {
+                    if (error) {
+                        reject(`Erro ao realizar o unlike na pergunta: ${error}`)      
+                        return
+                    }
+                    resolve()
+                })
+            }
+        })
+        
+    }, [roomId])
+
+    /**
+     * Highlight a question
+     */
+     const highlightAQuestion = React.useCallback((questionId: string, isHighlighted: boolean): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            const questionRef = database.ref(`rooms/${roomId}/questions/${questionId}`)
+
+            questionRef.update({
+                isHighlighted
             },(error) => {
                 if (error) {
-                    reject(`Erro ao realizar o like na pergunta: ${error}`)      
+                    reject(`Erro ao realizar o hightlight na pergunta: ${error}`)      
                     return
                 }
                 resolve()
@@ -183,14 +215,17 @@ export const useRoom = (roomId?: string): UseRommType => {
     }, [roomId])
 
     /**
-     * Like a question
+     * Highlight a question
      */
-    const unlikeAQuestion = React.useCallback((questionId: string, likeId: string): Promise<void> => {
+     const answerAQuestion = React.useCallback((questionId: string, isAnswered: boolean): Promise<void> => {
         return new Promise((resolve, reject) => {
-            const likesRef = database.ref(`rooms/${roomId}/questions/${questionId}/likes/${likeId}`)
-            likesRef.remove((error) => {
+            const questionRef = database.ref(`rooms/${roomId}/questions/${questionId}`)
+
+            questionRef.update({
+                isAnswered
+            },(error) => {
                 if (error) {
-                    reject(`Erro ao realizar o like na pergunta: ${error}`)      
+                    reject(`Erro ao marcar pergunta como respondida na pergunta: ${error}`)      
                     return
                 }
                 resolve()
@@ -198,7 +233,6 @@ export const useRoom = (roomId?: string): UseRommType => {
         })
         
     }, [roomId])
-
 
     React.useEffect(() => {
         const refreshQuestionsRef = refreshQuestions()
@@ -217,6 +251,7 @@ export const useRoom = (roomId?: string): UseRommType => {
         createNewQuestion, 
         removeQuestion, 
         likeAQuestion,
-        unlikeAQuestion 
+         highlightAQuestion,
+        answerAQuestion
     }
 }

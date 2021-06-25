@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import React from 'react'
 
 import 'styles/question.scss'
@@ -9,11 +10,26 @@ type QuestionProps = {
         name: string
         avatar: string
     }
+    isHighLighted?: boolean
+    isAnswered?: boolean
 }
 
-export const Question = ({ children, content, author }: QuestionProps) => {
+export const Question = ({ 
+    children, 
+    content, 
+    author, 
+    isHighLighted = false, 
+    isAnswered = false 
+}: QuestionProps) => {
+
+    const classes = classNames({
+        question: true,
+        answered: isAnswered,
+        highlight: isHighLighted && !isAnswered
+    })
+
     return (
-        <div className="question">
+        <div className={classes}>
             <p>{content}</p>
             <footer>
                 <div className="user-info">
