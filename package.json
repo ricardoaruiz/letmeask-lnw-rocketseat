@@ -27,8 +27,14 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "lint": "eslint src --max-warnings=0",
+    "commit": "cz",
     "eject": "react-scripts eject",
     "prepare": "husky install"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   },
   "lint-staged": {
     "src/**/*": [
@@ -58,6 +64,7 @@
     "@types/styled-components": "^5.1.10",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
+    "commitizen": "^4.2.4",
     "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
