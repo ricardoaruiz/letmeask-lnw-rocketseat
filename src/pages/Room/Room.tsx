@@ -9,97 +9,105 @@ import { useRoom } from 'hooks/useRoom'
 import * as S from './Room.style'
 
 type RoomParams = {
-    id: string
+  id: string
 }
 
 export const Room = () => {
-    const { id } = useParams<RoomParams>()
-    const { user } = useAuth()
-    const [newQuestion, setNewQuestion] = React.useState('')
-    const { title, questions, createNewQuestion, likeAQuestion } = useRoom(id)
+  const { id } = useParams<RoomParams>()
+  const { user } = useAuth()
+  const [newQuestion, setNewQuestion] = React.useState('')
+  const { title, questions, createNewQuestion, likeAQuestion } = useRoom(id)
 
-    const handleSendQuestion = React.useCallback( async (event: React.FormEvent<HTMLFormElement>) => {
-        try {
-            event.preventDefault()
+  const handleSendQuestion = React.useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      try {
+        event.preventDefault()
 
-            if(newQuestion.trim() === '') {
-                return
-            }
-            if(!user) {
-                // TODO: Tratar o erro
-                throw new Error('You must be logged in')
-            }
-
-            const question = {
-                content: newQuestion,
-                author: {
-                    name: user.name,
-                    avatar: user.avatar
-                },
-                isHighlighted: false,
-                isAnswered: false
-            }
-
-            await createNewQuestion(question)
-            setNewQuestion('')
-        } catch(error) {
-            // TODO: Tratar o erro
-            console.error(error)
+        if (newQuestion.trim() === '') {
+          return
         }
-    }, [createNewQuestion, newQuestion, user])
-
-    /**
-     * Like a questions
-     */
-    const handleLikeQuestion = React.useCallback(async (questionId: string, likeId: string | undefined) => {
-        try {
-            await likeAQuestion(questionId, user!.id, likeId)
-        } catch(error) {
-            // TODO: Tratar o erro
-            console.error(error)
+        if (!user) {
+          // TODO: Tratar o erro
+          throw new Error('You must be logged in')
         }
-    }, [likeAQuestion, user])
 
-    return (
-        <Content>
-            <Header id={id} />
+        const question = {
+          content: newQuestion,
+          author: {
+            name: user.name,
+            avatar: user.avatar
+          },
+          isHighlighted: false,
+          isAnswered: false
+        }
 
-            <S.Main>
-                <S.Title>
-                    <h1>Sala: {title}</h1>
-                    {!!questions.length && <span>{`${questions.length} perguntas`}</span>}
-                </S.Title>
+        await createNewQuestion(question)
+        setNewQuestion('')
+      } catch (error) {
+        // TODO: Tratar o erro
+        console.error(error)
+      }
+    },
+    [createNewQuestion, newQuestion, user]
+  )
 
-                <S.Form onSubmit={handleSendQuestion}>
-                    <textarea 
-                        placeholder="O que você quer perguntar?"
-                        value={newQuestion}
-                        onChange={event => setNewQuestion(event.target.value)}
-                    />
+  /**
+   * Like a questions
+   */
+  const handleLikeQuestion = React.useCallback(
+    async (questionId: string, likeId: string | undefined) => {
+      try {
+        await likeAQuestion(questionId, user!.id, likeId)
+      } catch (error) {
+        // TODO: Tratar o erro
+        console.error(error)
+      }
+    },
+    [likeAQuestion, user]
+  )
 
-                    <S.Footer>
-                        {user ? (
-                            <S.UserInfo>
-                                <img src={user.avatar} alt={user.name} />
-                                <span>{user.name}</span>
-                            </S.UserInfo>
-                        ) : (
-                            <span>
-                                Para enviar uma pergunta, 
-                                <button>faça seu login</button>
-                            </span>)}
-                        <Button type="submit" disabled={!user}>Enviar pergunta</Button>
-                    </S.Footer>
-                </S.Form>
+  return (
+    <Content>
+      <Header id={id} />
 
-                <div>
-                    <QuestionList 
-                        questions={questions} 
-                        onLikeQuestion={handleLikeQuestion} 
-                    />
-                </div>
-            </S.Main>
-        </Content>
-    )
+      <S.Main>
+        <S.Title>
+          <h1>Sala: {title}</h1>
+          {!!questions.length && <span>{`${questions.length} perguntas`}</span>}
+        </S.Title>
+
+        <S.Form onSubmit={handleSendQuestion}>
+          <textarea
+            placeholder="O que você quer perguntar?"
+            value={newQuestion}
+            onChange={(event) => setNewQuestion(event.target.value)}
+          />
+
+          <S.Footer>
+            {user ? (
+              <S.UserInfo>
+                <img src={user.avatar} alt={user.name} />
+                <span>{user.name}</span>
+              </S.UserInfo>
+            ) : (
+              <span>
+                Para enviar uma pergunta,
+                <button>faça seu login</button>
+              </span>
+            )}
+            <Button type="submit" disabled={!user}>
+              Enviar pergunta
+            </Button>
+          </S.Footer>
+        </S.Form>
+
+        <div>
+          <QuestionList
+            questions={questions}
+            onLikeQuestion={handleLikeQuestion}
+          />
+        </div>
+      </S.Main>
+    </Content>
+  )
 }
-

@@ -4,40 +4,45 @@ import { DefaultTheme, ThemeProvider } from 'styled-components'
 import { dark, light } from 'styles/themes'
 
 type ChangeThemeContextType = {
-    currentTheme: 'dark' | 'light'
-    toggleTheme: () => void
+  currentTheme: 'dark' | 'light'
+  toggleTheme: () => void
 }
 
 type ChangeThemeContextProviderProps = {
-    children: React.ReactNode
+  children: React.ReactNode
 }
 
 const themes = {
-    dark,
-    light
+  dark,
+  light
 }
 
-export const ChangeThemeContext = createContext<ChangeThemeContextType>({} as ChangeThemeContextType)
+export const ChangeThemeContext = createContext<ChangeThemeContextType>(
+  {} as ChangeThemeContextType
+)
 
-export const ChangeThemeContextProvider = ({ children }: ChangeThemeContextProviderProps) => {
+export const ChangeThemeContextProvider = ({
+  children
+}: ChangeThemeContextProviderProps) => {
+  const [theme, setTheme] = React.useState<DefaultTheme>(light)
+  const [currentTheme, setCurrentTheme] = React.useState<'dark' | 'light'>(
+    'light'
+  )
 
-    const [theme, setTheme] = React.useState<DefaultTheme>(light)
-    const [currentTheme, setCurrentTheme] = React.useState<'dark' | 'light'>('light')
+  const toggleTheme = React.useCallback(() => {
+    const newCurrentTheme = currentTheme === 'dark' ? 'light' : 'dark'
+    setTheme(themes[newCurrentTheme])
+    setCurrentTheme(newCurrentTheme)
+  }, [currentTheme])
 
-    const toggleTheme = React.useCallback(() => {
-        const newCurrentTheme = currentTheme === 'dark' ? 'light' : 'dark'
-        setTheme(themes[newCurrentTheme])
-        setCurrentTheme(newCurrentTheme)
-    }, [currentTheme])
-
-    return (
-        <ChangeThemeContext.Provider value={{
-            currentTheme,
-            toggleTheme
-        }}>
-            <ThemeProvider theme={theme}>
-                {children}
-            </ThemeProvider>
-        </ChangeThemeContext.Provider>
-    )
+  return (
+    <ChangeThemeContext.Provider
+      value={{
+        currentTheme,
+        toggleTheme
+      }}
+    >
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    </ChangeThemeContext.Provider>
+  )
 }

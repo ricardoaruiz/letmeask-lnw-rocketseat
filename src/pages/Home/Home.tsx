@@ -11,84 +11,83 @@ import { Button, MainContent, MainIlustration, MainLayout } from 'components'
 import * as S from './Home.style'
 
 export const Home = () => {
-    const history = useHistory();
-    const { user, signinWithGoogle } = useAuth()
-    const [roomCode, setRoomCode] = React.useState('')
+  const history = useHistory()
+  const { user, signinWithGoogle } = useAuth()
+  const [roomCode, setRoomCode] = React.useState('')
 
-    /**
-     * Create a new room
-     */
-    const handleCreateRoom = React.useCallback(async () => {
-        if (user) {
-            history.push('/rooms/new');
-            return;
-        }
-                
-        try {
-            await signinWithGoogle()
-            history.push('/rooms/new')
-        } catch(error) {
-            // TODO: tratar o erro
-            console.error(error)
-        }
-    }, [history, signinWithGoogle, user])
+  /**
+   * Create a new room
+   */
+  const handleCreateRoom = React.useCallback(async () => {
+    if (user) {
+      history.push('/rooms/new')
+      return
+    }
 
-    /**
-     * Access an existing room
-     */
-    const handleJoinRoom = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
+    try {
+      await signinWithGoogle()
+      history.push('/rooms/new')
+    } catch (error) {
+      // TODO: tratar o erro
+      console.error(error)
+    }
+  }, [history, signinWithGoogle, user])
 
-        if(roomCode.trim() === ''){
-            return
-        }
+  /**
+   * Access an existing room
+   */
+  const handleJoinRoom = React.useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
 
-        const roomRef = await database.ref(`rooms/${roomCode}`).get()
+      if (roomCode.trim() === '') {
+        return
+      }
 
-        if (!roomRef.exists()) {
-            alert('Room does not exists.')
-            return
-        }
+      const roomRef = await database.ref(`rooms/${roomCode}`).get()
 
-        if(roomRef.val().endedAt) {
-            alert('This room is closed.')
-            return
-        }
+      if (!roomRef.exists()) {
+        alert('Room does not exists.')
+        return
+      }
 
-        history.push(`/rooms/${roomCode}`)
+      if (roomRef.val().endedAt) {
+        alert('This room is closed.')
+        return
+      }
 
-    }, [history, roomCode])
+      history.push(`/rooms/${roomCode}`)
+    },
+    [history, roomCode]
+  )
 
-    return (
-        <MainLayout>
-            <aside>
-                <MainIlustration />
-            </aside>
-            <main>
-                <MainContent>
-                    
-                    <img src={logoImg} alt="" />
-                    
-                    <S.CreateRoom onClick={handleCreateRoom}>
-                        <img src={googleIconImg} alt="" />
-                        Crie a sua sala com o Google
-                    </S.CreateRoom>
+  return (
+    <MainLayout>
+      <aside>
+        <MainIlustration />
+      </aside>
+      <main>
+        <MainContent>
+          <img src={logoImg} alt="" />
 
-                    <S.Separator>ou entre em uma sala</S.Separator>
+          <S.CreateRoom onClick={handleCreateRoom}>
+            <img src={googleIconImg} alt="" />
+            Crie a sua sala com o Google
+          </S.CreateRoom>
 
-                    <form onSubmit={handleJoinRoom}>
-                        <input 
-                            type="text" 
-                            placeholder="Digite o código da sala"
-                            onChange={event => setRoomCode(event.target.value)}
-                            value={roomCode}
-                        />
-                        <Button type="submit">Entrar na sala</Button>
-                    </form>
+          <S.Separator>ou entre em uma sala</S.Separator>
 
-                </MainContent>
-            </main>
-        </MainLayout>
-    )
+          <form onSubmit={handleJoinRoom}>
+            <input
+              type="text"
+              placeholder="Digite o código da sala"
+              onChange={(event) => setRoomCode(event.target.value)}
+              value={roomCode}
+            />
+            <Button type="submit">Entrar na sala</Button>
+          </form>
+        </MainContent>
+      </main>
+    </MainLayout>
+  )
 }
-

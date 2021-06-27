@@ -3,14 +3,13 @@ import React from 'react'
 import * as S from './Button.style'
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    isOutlined?: boolean
+  isOutlined?: boolean
 }
 
-export const Button = ({ isOutlined = false, ...props }: ButtonProps ) => {
-
-    return (
-        <S.Button isOutlined={isOutlined} {...props} >
-            {props.children}
-        </S.Button>
-    )
+export const Button = ({ isOutlined = false, ...props }: ButtonProps) => {
+  return (
+    <S.Button isOutlined={isOutlined} {...props}>
+      {props.children}
+    </S.Button>
+  )
 }
