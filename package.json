@@ -25,7 +25,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --watchAll=false",
+    "test:coverage": "react-scripts test --watchAll --coverage",
     "lint": "eslint src --max-warnings=0",
     "commit": "cz",
     "eject": "react-scripts eject",
@@ -38,7 +39,8 @@
   },
   "lint-staged": {
     "src/**/*": [
-      "yarn lint --fix"
+      "yarn lint --fix",
+      "yarn test --findRelatedTests"
     ]
   },
   "eslintConfig": {
